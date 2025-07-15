@@ -27,11 +27,10 @@ let addressesnotls = [];
 let addressesnotlsapi = [];
 let addressescsv = [];
 let DLS = 8;
-// 新增 rename、countrynum、citynum变量
-let rename = 'CF反代';
+let rename = '@yutian81';
 let countrynum = 4;
 let citynum = 5;
-// let remarkIndex = 1;//CSV备注所在列偏移量
+let remarkIndex = 1;//CSV备注所在列偏移量
 let FileName = atob('ZWRnZXR1bm5lbA==');
 let BotToken;
 let ChatID;
@@ -124,11 +123,10 @@ export default {
                 if (env.ADDNOTLSAPI) addressesnotlsapi = await 整理(env.ADDNOTLSAPI);
                 if (env.ADDCSV) addressescsv = await 整理(env.ADDCSV);
                 DLS = Number(env.DLS) || DLS;
-		        // 新增 rename、countrynum、citynum变量
-                rename = env.RENAME || rename;
-		        countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
-		        citynum = parseInt(env.CITYNUM || citynum, 10);           
-		        // remarkIndex = Number(env.CSVREMARK) || remarkIndex;
+		rename = env.RENAME || rename;
+		countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
+		citynum = parseInt(env.CITYNUM || citynum, 10);
+                remarkIndex = Number(env.CSVREMARK) || remarkIndex;
                 BotToken = env.TGTOKEN || BotToken;
                 ChatID = env.TGID || ChatID;
                 FileName = env.SUBNAME || FileName;
@@ -1839,8 +1837,9 @@ async function 整理测速结果(tls) {
             const ipAddressIndex = 0;// IP地址在 CSV 头部的位置
             const portIndex = 1;// 端口在 CSV 头部的位置
             //const dataCenterIndex = tlsIndex + remarkIndex; // 数据中心是 TLS 的后一个字段
-	        const countryIndex = tlsIndex + countrynum;
-            const cityIndex = tlsIndex + citynum;
+	    const countryIndex = tlsIndex + countrynum;
+	    const cityIndex = tlsIndex + citynum;
+
             if (tlsIndex === -1) {
                 console.error('CSV文件缺少必需的字段');
                 continue;
@@ -1858,7 +1857,7 @@ async function 整理测速结果(tls) {
                     //const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
 		    const country = columns[countryIndex];
 		    const city = columns[cityIndex];
-		    const formattedAddress = `${ipAddress}:${port}#${country} | ${city} | ${rename}`;
+		    const formattedAddress = `${ipAddress}:${port}#${country} | ${city}${rename}`;
                     newAddressescsv.push(formattedAddress);
                     if (csvUrl.includes('proxyip=true') && columns[tlsIndex].toUpperCase() == 'true' && !httpsPorts.includes(port)) {
                         // 如果URL带有'proxyip=true'，则将内容添加到proxyIPPool
