@@ -15,7 +15,7 @@ jobs:
     env:
       UP_REPO: cmliu/edgetunnel # 上游仓库
       UP_BRANCH: main           # 上游分支
-      FILE_TO_SYNC: 明文源码.js # 需要同步的文件
+      FILE_TO_SYNC: _worker-cm.js # 需要同步的文件
 
     steps:
       # 步骤 1: 设置 UTF-8 编码环境 和 git 编码
