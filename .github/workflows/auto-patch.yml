@@ -1,6 +1,11 @@
 name: Auto Patch
 
 on:
+  workflow_run:
+    workflows:
+      - Upstream File Sync
+    types:
+      - completed
   push:
     paths:
       - '_worker.js'
