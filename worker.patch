@@ -1,5 +1,5 @@
 diff --git a/_worker.js b/_worker2.js
-index dec34bc..c03a89e 100644
+index dec34bc..241b729 100644
 --- a/_worker.js
 +++ b/_worker2.js
 @@ -27,11 +27,14 @@ let addresses = [];
@@ -18,20 +18,22 @@ index dec34bc..c03a89e 100644
  let ChatID;
  let proxyhosts = [];
  let proxyhostsURL = '';
-@@ -120,10 +123,13 @@ export default {
+@@ -120,11 +123,14 @@ export default {
                  if (env.ADDAPI) addressesapi = await 整理(env.ADDAPI);
                  if (env.ADDNOTLS) addressesnotls = await 整理(env.ADDNOTLS);
                  if (env.ADDNOTLSAPI) addressesnotlsapi = await 整理(env.ADDNOTLSAPI);
                  if (env.ADDCSV) addressescsv = await 整理(env.ADDCSV);
                  DLS = Number(env.DLS) || DLS;
+-                remarkIndex = Number(env.CSVREMARK) || remarkIndex;
 +                rename = env.RENAME || rename;
 +                countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
 +                citynum = parseInt(env.CITYNUM || citynum, 10);
-                 remarkIndex = Number(env.CSVREMARK) || remarkIndex;
++                // remarkIndex = Number(env.CSVREMARK) || remarkIndex;
                  BotToken = env.TGTOKEN || BotToken;
                  ChatID = env.TGID || ChatID;
                  FileName = env.SUBNAME || FileName;
                  subEmoji = env.SUBEMOJI || env.EMOJI || subEmoji;
+                 if (subEmoji == '0') subEmoji = 'false';
 @@ -1846,11 +1852,13 @@ async function 整理测速结果(tls) {
              const header = lines[0].split(',');
              const tlsIndex = header.indexOf('TLS');
