@@ -4,6 +4,11 @@ permissions:
   contents: write
 
 on:
+  workflow_run:
+    workflows:
+      - Auto Patch
+    types:
+      - completed
   push:
     paths:
       - _worker2.js # 该文件变动时触发本工作流
