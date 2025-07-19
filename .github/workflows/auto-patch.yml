@@ -7,12 +7,11 @@ on:
       - completed
   push:
     paths:
-      - _worker2.js # 手动触发时的路径匹配
+      - _worker2.js
   workflow_dispatch:
 
 jobs:
   apply-patch:
-    # 仅当上游同步成功时运行
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
@@ -20,15 +19,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取所有历史记录
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install patch utility
-        run: sudo apt-get update && sudo apt-get install -y patch
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patch dos2unix
 
       - name: Verify patch file
         run: |
@@ -36,24 +37,48 @@ jobs:
             echo "❌ 未找到补丁文件 worker.patch!"
             exit 1
           fi
-          cat worker.patch | head -n 5
+          echo "补丁文件内容预览:"
+          head -n 10 worker.patch
 
-      - name: Backup original file
-        run: cp _worker.js _worker.js.bak
+      - name: Normalize line endings
+        run: |
+          # 转换所有文件为 Unix 风格行尾 (LF)
+          dos2unix _worker.js worker.patch
+          
+          # 创建备份文件
+          cp _worker.js _worker.js.bak
+          cp worker.patch worker.patch.bak
+          
+          # 检查行尾格式
+          echo "_worker.js 行尾格式:"
+          file _worker.js
+          echo "worker.patch 行尾格式:"
+          file worker.patch
 
       - name: Apply patch to create _worker2.js
         run: |
-          # 应用补丁到备份文件
-          patch -l -u _worker.js.bak -i worker.patch -o _worker2.js
+          # 应用补丁（忽略空白差异和行尾差异）
+          patch -l --binary -u _worker.js.bak -i worker.patch -o _worker2.js
           
           # 检查是否成功
           if [ $? -ne 0 ]; then
             echo "❌ 补丁应用失败"
             echo "::warning::补丁应用失败, 检查补丁兼容性"
-            exit 1
+            
+            # 尝试使用模糊匹配
+            echo "尝试使用模糊匹配 (fuzz=3)..."
+            patch -l --binary -u -F 3 _worker.js.bak -i worker.patch -o _worker2.js
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ 模糊匹配也失败"
+              exit 1
+            else
+              echo "✅ 使用模糊匹配成功"
+            fi
+          else
+            echo "✅ 补丁应用成功"
           fi
-
-          echo "✅ 补丁应用成功"
+          
           ls -la _worker*.js
 
       - name: Commit changes
@@ -63,7 +88,6 @@ jobs:
           
           git add _worker2.js
           
-          # 检查是否有更改需要提交
           if git diff-index --quiet HEAD --; then
             echo "ℹ️ 没有任何需要提交的更改"
           else
@@ -71,13 +95,16 @@ jobs:
             git push
           fi
 
-      - name: Create artifact
+      - name: Create debug artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: patch-failure-artifacts
+          name: patch-debug-files
           path: |
             _worker.js
             _worker.js.bak
             worker.patch
-          retention-days: 1
+            worker.patch.bak
+            _worker2.js
+            *.rej
+          retention-days: 7
