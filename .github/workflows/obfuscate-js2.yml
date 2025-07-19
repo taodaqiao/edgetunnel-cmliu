@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     paths:
-      - 明文源码2.js # 手动触发时的路径匹配
+      - _worker2.js # 该文件变动时触发本工作流
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SOURCE_FILE: 明文源码2.js
+      SOURCE_FILE: _worker2.js
       OUTPUT_FILE: jiami2.js
 
     steps:
