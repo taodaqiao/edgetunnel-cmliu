@@ -1,18 +1,14 @@
 name: Auto Patch
 
 on:
-  workflow_run:
-    workflows: ["Upstream File Sync"]
-    types:
-      - completed
   push:
     paths:
-      - _worker2.js
+      - '_worker.js'    # _worker.js 变动时触发
+      - 'worker.patch'  # worker.patch 变动时触发
   workflow_dispatch:
 
 jobs:
   apply-patch:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -20,20 +16,46 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 添加 clean 参数确保干净的工作区
           clean: true
+          ref: ${{ github.event.after || github.sha }}
+
+      - name: Check if should run
+        id: check-run
+        run: |
+          # 手动触发时总是运行
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "::notice::手动触发工作流"
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # 检查变更文件列表
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "变更文件: $CHANGED_FILES"
+          
+          # 如果 _worker.js 或 worker.patch 有变更则运行
+          if [[ "$CHANGED_FILES" =~ "_worker.js" ]] || [[ "$CHANGED_FILES" =~ "worker.patch" ]]; then
+            echo "::notice::检测到 _worker.js 或 worker.patch 变更"
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "::notice::未检测到相关文件变更，跳过工作流"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Node.js
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y patch dos2unix
 
       - name: Verify patch file
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
           if [ ! -f "worker.patch" ]; then
             echo "❌ 未找到补丁文件 worker.patch!"
@@ -43,31 +65,24 @@ jobs:
           head -n 10 worker.patch
 
       - name: Normalize line endings
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
-          # 转换所有文件为 Unix 风格行尾 (LF)
           dos2unix _worker.js worker.patch
-          
-          # 创建备份文件（但不要提交这些备份）
           cp _worker.js _worker.js.bak
           cp worker.patch worker.patch.bak
-          
-          # 检查行尾格式
           echo "_worker.js 行尾格式:"
           file _worker.js
           echo "worker.patch 行尾格式:"
           file worker.patch
 
       - name: Apply patch to create _worker2.js
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
-          # 应用补丁（忽略空白差异和行尾差异）
           patch -l --binary -u _worker.js.bak -i worker.patch -o _worker2.js
           
-          # 检查是否成功
           if [ $? -ne 0 ]; then
             echo "❌ 补丁应用失败"
             echo "::warning::补丁应用失败, 检查补丁兼容性"
-            
-            # 尝试使用模糊匹配
             echo "尝试使用模糊匹配 (fuzz=3)..."
             patch -l --binary -u -F 3 _worker.js.bak -i worker.patch -o _worker2.js
             
@@ -84,28 +99,22 @@ jobs:
           ls -la _worker*.js
 
       - name: Clean up temporary files
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
-          # 删除所有临时文件
           rm -f _worker.js.bak
           rm -f worker.patch.bak
           rm -f *.rej
           rm -f *.orig
-          
-          # 恢复原始文件（因为我们只修改了副本）
           git checkout -- _worker.js
-          
-          # 确保工作区干净
           git status
 
       - name: Commit changes
+        if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 只添加我们想要提交的文件
           git add _worker2.js
           
-          # 检查是否有更改需要提交
           if git diff-index --cached --quiet HEAD --; then
             echo "ℹ️ 没有任何需要提交的更改"
           else
@@ -114,7 +123,7 @@ jobs:
           fi
 
       - name: Create debug artifacts
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.check-run.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: patch-debug-files
