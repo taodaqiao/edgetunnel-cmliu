@@ -51,7 +51,6 @@ jobs:
       - name: Install dependencies
         if: ${{ steps.check-run.outputs.should_run == 'true' }}
         run: |
-          sudo apt-get update
           sudo apt-get install -y patch dos2unix
 
       - name: Verify patch file
