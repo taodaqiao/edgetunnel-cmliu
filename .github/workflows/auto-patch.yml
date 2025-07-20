@@ -127,7 +127,8 @@ jobs:
             echo "ℹ️ 没有任何需要提交的更改"
           else
             git commit -m "Auto-patch _worker2.js"
-            # 推送到当前分支
+            # 先拉取远程变更，再强制推送
+            git pull --rebase origin $BRANCH_NAME
             git push origin HEAD:$BRANCH_NAME
           fi
 
