@@ -165,7 +165,7 @@ export default {
 				rename = env.RENAME || rename;
 				countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
 				citynum = parseInt(env.CITYNUM || citynum, 10);
-                remarkIndex = Number(env.CSVREMARK) || remarkIndex;
+                // remarkIndex = Number(env.CSVREMARK) || remarkIndex;
                 BotToken = env.TGTOKEN || BotToken;
                 ChatID = env.TGID || ChatID;
                 FileName = env.SUBNAME || FileName;
@@ -5283,7 +5283,9 @@ async function config_Json(userID, hostName, sub, UA, RproxyIP, _url, fakeUserID
             ADDNOTLSAPI: addressesnotlsapi,
             ADDCSV: addressescsv,
             DLS: DLS,
-            CSVREMARK: remarkIndex,
+            // CSVREMARK: remarkIndex,			
+			COUNTRYNUM: countryIndex,
+			CITYNUM: cityIndex,
             SUBAPI: `${subProtocol}://${subConverter}`,
             SUBCONFIG: subConfig
         },
