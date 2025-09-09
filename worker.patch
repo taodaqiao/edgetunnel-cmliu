@@ -8,11 +8,10 @@ index dec34bc..241b729 100644
  let addressesnotlsapi = [];
  let addressescsv = [];
  let DLS = 8;
--let remarkIndex = 1;//CSV备注所在列偏移量
 +let rename = 'Yutian81';
 +let countrynum = 4;
 +let citynum = 5;
-+// let remarkIndex = 1;//CSV备注所在列偏移量
+ let remarkIndex = 1;//CSV备注所在列偏移量
  let FileName = atob('ZWRnZXR1bm5lbA==');
  let BotToken;
  let ChatID;
@@ -24,11 +23,10 @@ index dec34bc..241b729 100644
                  if (env.ADDNOTLSAPI) addressesnotlsapi = await 整理(env.ADDNOTLSAPI);
                  if (env.ADDCSV) addressescsv = await 整理(env.ADDCSV);
                  DLS = Number(env.DLS) || DLS;
--                remarkIndex = Number(env.CSVREMARK) || remarkIndex;
 +                rename = env.RENAME || rename;
 +                countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
 +                citynum = parseInt(env.CITYNUM || citynum, 10);
-+                // remarkIndex = Number(env.CSVREMARK) || remarkIndex;
+                 remarkIndex = Number(env.CSVREMARK) || remarkIndex;
                  BotToken = env.TGTOKEN || BotToken;
                  ChatID = env.TGID || ChatID;
                  FileName = env.SUBNAME || FileName;
@@ -40,8 +38,7 @@ index dec34bc..241b729 100644
  
              const ipAddressIndex = 0;// IP地址在 CSV 头部的位置
              const portIndex = 1;// 端口在 CSV 头部的位置
--            const dataCenterIndex = tlsIndex + remarkIndex; // 数据中心是 TLS 的后一个字段
-+            // const dataCenterIndex = tlsIndex + remarkIndex; // 数据中心是 TLS 的后一个字段
+             const dataCenterIndex = tlsIndex + remarkIndex; // 数据中心是 TLS 的后一个字段
 +            const countryIndex = tlsIndex + countrynum;
 +            const cityIndex = tlsIndex + citynum;
  
@@ -55,14 +52,13 @@ index dec34bc..241b729 100644
                  if (columns[tlsIndex].toUpperCase() === tls && parseFloat(columns[speedIndex]) > DLS) {
                      const ipAddress = columns[ipAddressIndex];
                      const port = columns[portIndex];
--                    const dataCenter = columns[dataCenterIndex];
-+                    //const dataCenter = columns[dataCenterIndex];
+                     const dataCenter = columns[dataCenterIndex];
 +                    //const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
 +                    const country = columns[countryIndex];
 +                    const city = columns[cityIndex];
 +                    const formattedAddress = `${ipAddress}:${port}#${country} | ${city}@${rename}`;
- 
 -                    const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
+
                      newAddressescsv.push(formattedAddress);
                      if (csvUrl.includes('proxyip=true') && columns[tlsIndex].toUpperCase() == 'true' && !httpsPorts.includes(port)) {
                          // 如果URL带有'proxyip=true'，则将内容添加到proxyIPPool
