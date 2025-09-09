@@ -32,7 +32,7 @@ let DLS = 8;
 let rename = 'yutian81';
 let countrynum = 4;
 let citynum = 5;
-// let remarkIndex = 1;//CSV备注所在列偏移量
+let remarkIndex = 1;//CSV备注所在列偏移量
 let FileName = atob('ZWRnZXR1bm5lbA==');
 let BotToken;
 let ChatID;
@@ -165,7 +165,7 @@ export default {
 				rename = env.RENAME || rename;
 				countrynum = parseInt(env.COUNTRYNUM || countrynum, 10);
 				citynum = parseInt(env.CITYNUM || citynum, 10);
-                // remarkIndex = Number(env.CSVREMARK) || remarkIndex;
+                remarkIndex = Number(env.CSVREMARK) || remarkIndex;
                 BotToken = env.TGTOKEN || BotToken;
                 ChatID = env.TGID || ChatID;
                 FileName = env.SUBNAME || FileName;
@@ -5283,9 +5283,9 @@ async function config_Json(userID, hostName, sub, UA, RproxyIP, _url, fakeUserID
             ADDNOTLSAPI: addressesnotlsapi,
             ADDCSV: addressescsv,
             DLS: DLS,
-            // CSVREMARK: remarkIndex,			
 			COUNTRYNUM: countryIndex,
 			CITYNUM: cityIndex,
+            CSVREMARK: remarkIndex,
             SUBAPI: `${subProtocol}://${subConverter}`,
             SUBCONFIG: subConfig
         },
