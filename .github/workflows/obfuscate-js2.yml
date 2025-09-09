@@ -4,11 +4,11 @@ permissions:
   contents: write
 
 on:
-  workflow_run:
-    workflows:
-      - Auto Patch
-    types:
-      - completed
+  #workflow_run:
+  #  workflows:
+  #    - Auto Patch
+  #  types:
+  #    - completed
   push:
     paths:
       - _worker2.js
