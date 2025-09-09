@@ -5284,8 +5284,8 @@ async function config_Json(userID, hostName, sub, UA, RproxyIP, _url, fakeUserID
             ADDNOTLSAPI: addressesnotlsapi,
             ADDCSV: addressescsv,
             DLS: DLS,
-			COUNTRYNUM: countryIndex,
-			CITYNUM: cityIndex,
+			COUNTRYNUM: countrynum,
+			CITYNUM: citynum,
             CSVREMARK: remarkIndex,
             SUBAPI: `${subProtocol}://${subConverter}`,
             SUBCONFIG: subConfig
