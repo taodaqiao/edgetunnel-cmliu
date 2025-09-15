@@ -1,4 +1,4 @@
-
+﻿
 import { connect } from 'cloudflare:sockets';
 
 let userID = '';
@@ -2254,12 +2254,12 @@ async function 整理测速结果(tls) {
                     const ipAddress = columns[ipAddressIndex];
                     const port = columns[portIndex];
                     const dataCenter = columns[dataCenterIndex];
-                    // const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
 					const country = columns[countryIndex];
 					const city = columns[cityIndex];
 					const formattedAddress = `${ipAddress}:${port}#${country} | ${city} | ${rename}`;
-
-					newAddressescsv.push(formattedAddress);
+                    //const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
+					
+                    newAddressescsv.push(formattedAddress);
                     if (csvUrl.includes('proxyip=true') && columns[tlsIndex].toUpperCase() == 'true' && !httpsPorts.includes(port)) {
                         // 如果URL带有'proxyip=true'，则将内容添加到proxyIPPool
                         proxyIPPool.push(`${ipAddress}:${port}`);
@@ -5253,14 +5253,14 @@ async function config_Json(userID, hostName, sub, UA, RproxyIP, _url, fakeUserID
             KEY: (uuid != userID) ? {
                 DynamicUUID: true,
                 TOKEN: uuid || null,
-                UUID: userID || null,
+                UUID: userID.toLowerCase() || null,
                 UUIDLow: userIDLow || null,
                 TIME: 有效时间 || null,
                 UPTIME: 更新时间 || null,
                 fakeUserID: fakeUserID || null,
             } : {
                 DynamicUUID: false,
-                UUID: userID || null,
+                UUID: userID.toLowerCase() || null,
                 fakeUserID: fakeUserID || null,
             },
             SCV: SCV
@@ -5708,8 +5708,13 @@ function config_Html(token = "test", proxyhost = "") {
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 12px;
             justify-content: space-between;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .advanced-settings-btn {
@@ -6364,8 +6369,10 @@ function config_Html(token = "test", proxyhost = "") {
             <!-- 订阅链接 -->
             <div class="section">
                 <div class="section-header">
-                    <span>📋</span>
-                    <span>订阅链接</span>
+                    <div class="section-title">
+                        <span>📋</span>
+                        <span>订阅链接</span>
+                    </div>
                     <button class="advanced-settings-btn" onclick="openAdvancedSettings()">⚙️ 自定义订阅设置</button>
                 </div>
                 <div class="section-content">
@@ -6564,7 +6571,8 @@ function config_Html(token = "test", proxyhost = "") {
         function renderSubscriptionLinks() {
             const container = document.getElementById('subscriptionLinks');
             const host = configData.config.HOST;
-            const uuid = configData.config.KEY.UUID;
+            // 根据DynamicUUID决定使用TOKEN还是UUID
+            const uuid = configData.config.KEY.DynamicUUID ? configData.config.KEY.TOKEN : configData.config.KEY.UUID;
             
             const subscriptions = [
                 { name: '自适应订阅', suffix: '?sub', primary: true },
@@ -6808,8 +6816,8 @@ function config_Html(token = "test", proxyhost = "") {
                 items.push({ label: 'CloudflareCDN访问模式', value: '自动获取' });
             } else {
                 const cf2cdn = proxy.CFCDN.toLowerCase();
-                const go2socks5 = proxy.GO2SOCKS5.join('').toLowerCase();
-                const isGlobal = go2socks5.includes('all in') || go2socks5.includes('*') || go2socks5 === 'all in';
+                const go2socks5Array = proxy.GO2SOCKS5.map(item => item.toLowerCase());
+                const isGlobal = go2socks5Array.includes('all in') || go2socks5Array.includes('*');
 
                 if (cf2cdn === 'proxyip') {
                     items.push({ label: 'CloudflareCDN访问模式', value: 'ProxyIP' });
